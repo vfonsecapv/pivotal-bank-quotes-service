@@ -5,12 +5,21 @@ version = new ProjectVersion()
 class ProjectVersion {
 	String build
 	ProjectVersion() {
-                def file = new File('version/number')
-                if(file.exists()) {
-                   this.build = file.text.trim()
-                } else {
-                    this.build = "0.4.0"
-                }
+    String versionNumber = System.getProperty("versionNumber")
+		if (versionNumber) {
+      this.build = versionNumber
+			System.out.println("Using version from command line: " + this.build)
+		}
+		else {
+      def file = new File('version/number')
+      if(file.exists()) {
+        this.build = file.text.trim()
+				System.out.println("Using version from file: " + this.build)
+      } else {
+        this.build = "0.4.0"
+				System.err.println("Version number not specified, using default: " + this.build)
+      }
+		}
 	}
 	@Override
 	String toString() {

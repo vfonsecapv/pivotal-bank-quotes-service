@@ -1,0 +1,28 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: java
+    tag: "8"
+
+inputs:
+  - name: quotes-service
+  - name: version
+
+outputs:
+  - name: build
+
+run:
+  path: quotes-service/ci/concourse/tasks/build.sh
+  args: [
+    --input-dir, quotes-service,
+    --output-dir, build,
+    --version-file, version/number,
+    --artifactId, quotes,
+    --packaging, jar
+  ]
+
+params:
+  TERM: dumb

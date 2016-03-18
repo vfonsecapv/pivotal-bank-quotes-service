@@ -1,0 +1,57 @@
+# Stores artifacts in S3 compatible storage (AWS, Swift, etc.)
+---
+resources:
+  - name: version
+    type: semver
+    source:
+      bucket: {{s3-bucket-version}}
+      key: {{s3-quotes-version-file-key}}
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+
+  - name: final-release
+    type: s3
+    source:
+      bucket: {{s3-bucket-releases}}
+      regexp: quotes-(.*).jar
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+
+  - name: candidate-release
+    type: s3
+    source:
+      bucket: {{s3-bucket-release-candidates}}
+      regexp: quotes-(.*).jar
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+
+  - name: quotes-service
+    type: git
+    source:
+      uri: {{github-uri}}
+      branch: {{github-branch}}
+
+  - name: cf
+    type: cf
+    source:
+      api: {{cf-api}}
+      username: {{cf-username}}
+      password: {{cf-password}}
+      organization: {{cf-org}}
+      space: {{cf-space}}
+      skip_cert_check: true
+
+jobs:
+  - name: build-artifact
+    serial_groups: [ version ]
+    plan:
+      - get: quotes-service
+        trigger: true
+      - get: version
+        params: { pre: rc }
+      - task: build
+        file: quotes-service/ci/concourse/tasks/build.yml
+      - put: candidate-release
+        params: { from: build/lib/quoutes-(.*).war }
+      - put: version
+        params: { file: version/version }
