@@ -52,6 +52,6 @@ jobs:
       - task: build
         file: quotes-service/ci/concourse/tasks/build.yml
       - put: candidate-release
-        params: { from: build/lib/quoutes-(.*).war }
+        params: { from: build/lib/quotes-(.*).war }
       - put: version
         params: { file: version/version }
